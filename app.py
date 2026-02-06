@@ -51,7 +51,35 @@ def extract_ad_from_pdf(pdf_file, authority):
             extractor = EASAExtractor()
         
         # Extract rules
-        ad = extractor.extract(markdown_text, ad_id)
+        try:
+            ad = extractor.extract(markdown_text, ad_id)
+            
+            # Check if rules were found. If not, try LLM fallback
+            if not ad.applicability_rules:
+                print("No rules found with rule-based extractor. Attempting LLM fallback...")
+                from extractors import LLMFallbackExtractor
+                llm_extractor = LLMFallbackExtractor()
+                
+                if llm_extractor.client:
+                    ad = llm_extractor.extract(markdown_text, ad_id)
+                else:
+                    return json.dumps({
+                        "warning": "No rules found and OpenAI API key not configured for fallback.",
+                        "partial_result": {
+                            "ad_id": ad.ad_id,
+                            "raw_text_snippet": markdown_text[:500] + "..."
+                        }
+                    }, indent=2)
+                    
+        except Exception as e:
+            print(f"Rule-based extraction failed: {e}. Attempting LLM fallback...")
+            from extractors import LLMFallbackExtractor
+            llm_extractor = LLMFallbackExtractor()
+            
+            if llm_extractor.client:
+                ad = llm_extractor.extract(markdown_text, ad_id)
+            else:
+                raise e
         
         # Convert to dict for JSON output
         output = {
