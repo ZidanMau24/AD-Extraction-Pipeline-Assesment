@@ -44,7 +44,8 @@ aviation/
 ├── test_data.py                 # Test aircraft configurations
 ├── extractors/
 │   ├── faa_extractor.py        # FAA AD parser
-│   └── easa_extractor.py       # EASA AD parser
+│   ├── easa_extractor.py       # EASA AD parser
+│   └── llm_fallback.py         # Other Format AD parser (AI Fallback)  
 ├── extracted/
 │   ├── FAA_AD_2025-23-53.md    # Extracted markdown
 │   └── EASA_AD_2025-0254.md    # Extracted markdown
