@@ -113,6 +113,7 @@ All 3 verification examples from the assignment pass:
 ✅ **Automated extraction** - Works on new, unseen ADs  
 ✅ **Structured output** - JSON with Pydantic validation  
 ✅ **Complex rules** - Handles modification exclusions  
+✅ **Hybrid extraction** - Rule-based speed + AI fallback for edge cases  
 ✅ **Variant matching** - A320-214 matches A320  
 ✅ **Batch evaluation** - Process multiple aircraft efficiently  
 ✅ **Explainable** - Clear reasons for each decision  
@@ -122,8 +123,7 @@ All 3 verification examples from the assignment pass:
 See `report.md` for detailed discussion of:
 - Approach rationale
 - Challenges encountered
-- Known limitations
-- Trade-offs (LLM vs rule-based vs VLM)
+- Known limitations (e.g., table extraction)
 - Future improvements
 
 ## Author

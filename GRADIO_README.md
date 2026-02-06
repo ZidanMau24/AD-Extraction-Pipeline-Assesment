@@ -74,17 +74,18 @@ The app will launch at: **http://localhost:7860**
 
 ✅ **Drag-and-drop upload** - Easy file selection  
 ✅ **Authority selection** - FAA or EASA  
-✅ **Real-time extraction** - Process PDFs on-the-fly  
+✅ **Hybrid Extraction** - Rule-based speed + **AI Fallback** for difficult ADs  
 ✅ **Structured JSON output** - Clean, validated data  
 ✅ **Example buttons** - Quick testing with provided ADs  
-✅ **Error handling** - Clear error messages  
+✅ **Error handling** - Clear error messages with fallback warnings  
 
 ## 🔧 Technical Details
 
 - **Framework**: Gradio 4.0+
 - **PDF Processing**: Docling
 - **Data Validation**: Pydantic
-- **Extraction**: Regex-based parsing with FAA/EASA extractors
+- **Extraction**: Regex-based parsing + OpenAI GPT-4o-mini
+- **Pattern**: Tries regex first -> fails over to LLM if no rules found
 
 ## 📝 Notes
 
