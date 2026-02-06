@@ -6,15 +6,15 @@ The pipeline uses a hybrid approach that combines speed with flexibility:
 
 ```mermaid
 flowchart TD
-    A["📄 Upload AD PDF"] --> B["🔄 Docling Conversion"]
+    A[" Upload AD PDF"] --> B["🔄 Docling Conversion"]
     B --> C["📝 Markdown Text"]
     C --> D{"🏢 Select Authority"}
-    D -->|FAA| E["⚡ FAA Regex Extractor"]
-    D -->|EASA| F["⚡ EASA Regex Extractor"]
+    D -->|FAA| E[" FAA Regex Extractor"]
+    D -->|EASA| F[" EASA Regex Extractor"]
     E --> G{"✅ Rules Found?"}
     F --> G
     G -->|Yes| H["📊 Structured Output"]
-    G -->|No| I["🤖 LLM Fallback<br/>(GPT-4o-mini)"]
+    G -->|No| I[" LLM Fallback<br/>(GPT-4o-mini)"]
     I --> H
     H --> J["💾 Pydantic Models"]
     J --> K["🔍 Evaluation Engine"]
