@@ -32,7 +32,7 @@ class LLMFallbackExtractor:
         Args:
             api_key: OpenAI API key. If None, tries to get from env var OPENAI_API_KEY.
         """
-        self.api_key = api_key or os.getenv("OPEN_AI_API") # Based on user's .env file name
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         
         if not self.api_key:
             print("Warning: No OpenAI API key found. LLM fallback will not work.")
@@ -60,7 +60,7 @@ class LLMFallbackExtractor:
         
         Output must be a valid JSON object matching this structure:
         {
-            "issuing_authority": "FAA" or "EASA",
+            "issuing_authority": "EASA", "FAA", "TCCA", "CAA UK", "ANAC", "CASA", "CAAC", "CAAS", "JCAB", "DGCA India",And "ICAO",
             "effective_date": "string",
             "manufacturer": "string",
             "applicability_rules": [
@@ -153,7 +153,7 @@ class LLMFallbackExtractor:
                 effective_date=data.get("effective_date", "Unknown"),
                 manufacturer=data.get("manufacturer", "Unknown"),
                 applicability_rules=rules,
-                raw_applicability_text="Extracted by AI"
+                raw_applicability_text=" "
             )
             
         except Exception as e:
