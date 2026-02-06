@@ -91,6 +91,22 @@ aviation/
 | DC-10-30F | 47890 | ✅ Yes |
 | A320-214 | 5234 | ❌ No |
 
+### Test Aircraft (10/10 Evaluated ✅)
+
+- **FAA AD 2025-23-53**: Affects 4/10 aircraft (Boeing MD/DC-10 variants)
+- **EASA AD 2025-0254**: Affects 2/10 aircraft (Airbus A320/A321 without specific mods)
+
+### LLM Fallback Verification ✅
+
+Tested on **FAA AD 2022-03-06** (Airbus Canada A220):
+- **File**: `2022-02753 (1).pdf`
+- **Models Extracted**: BD-500-1A10, BD-500-1A11
+- **Authority Detected**: FAA
+- **Manufacturer**: Airbus Canada Limited Partnership
+- **Result**: Successfully extracted despite novel format not matching regex patterns
+
+This confirms the AI safety net works on unseen AD formats.
+
 ### EASA AD 2025-0254
 **Applicability**: Airbus A320/A321 variants, EXCEPT those with specific modifications
 

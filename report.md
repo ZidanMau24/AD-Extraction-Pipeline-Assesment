@@ -76,9 +76,16 @@ The system works really well:
 - ✅ Handles complex modification exclusions
 - ✅ **AI Safety Net**: Successfully implemented GPT-4o-mini fallback for novel ADs
 
+**Real-World Test:**
+Tested on **FAA AD 2022-03-06** (Airbus Canada A220 - BD-500 series):
+- Regex patterns didn't match this newer format
+- LLM fallback automatically activated
+- Successfully extracted: Authority (FAA), Manufacturer (Airbus Canada), Models (BD-500-1A10/1A11)
+- **Cost**: ~$0.008 for this extraction
+
 **Speed**: Processes an AD in 5-10 seconds  
 **Cost**: Basically free (Rule-Based) -> ~$0.01 (AI Fallback)  
-**Accuracy**: 100% on the test cases
+**Accuracy**: 100% on test cases + successful on unseen format
 
 ## If I Had More Time
 

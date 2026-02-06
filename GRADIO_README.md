@@ -89,9 +89,10 @@ The app will launch at: **http://localhost:7860**
 
 ## 📝 Notes
 
-- The app runs locally and does not send data to external servers
+- The app runs locally and does not send data to external servers (except OpenAI API for fallback)
 - Processing time depends on PDF size (typically 5-10 seconds)
 - Large PDFs (>10MB) may take longer to process
+- **LLM Fallback**: Automatically activates when regex patterns don't match. Tested successfully on Airbus Canada A220 AD.
 
 ## 🐛 Troubleshooting
 
