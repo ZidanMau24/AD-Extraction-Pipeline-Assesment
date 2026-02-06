@@ -143,5 +143,5 @@ See `report.md` for detailed discussion of:
 - Future improvements
 
 ## Author
-
+### Zidan Maulana
 Created for Data Science/AI Engineer Takehome Assignment

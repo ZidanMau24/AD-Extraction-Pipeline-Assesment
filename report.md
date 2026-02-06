@@ -1,5 +1,37 @@
 # Technical Report: AD Extraction Pipeline
 
+## System Architecture
+
+The pipeline uses a hybrid approach that combines speed with flexibility:
+
+```mermaid
+flowchart TD
+    A["📄 Upload AD PDF"] --> B["🔄 Docling Conversion"]
+    B --> C["📝 Markdown Text"]
+    C --> D{"🏢 Select Authority"}
+    D -->|FAA| E["⚡ FAA Regex Extractor"]
+    D -->|EASA| F["⚡ EASA Regex Extractor"]
+    E --> G{"✅ Rules Found?"}
+    F --> G
+    G -->|Yes| H["📊 Structured Output"]
+    G -->|No| I["🤖 LLM Fallback<br/>(GPT-4o-mini)"]
+    I --> H
+    H --> J["💾 Pydantic Models"]
+    J --> K["🔍 Evaluation Engine"]
+    K --> L["✅ Results + Reasoning"]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff3e0
+    style I fill:#f3e5f5
+    style H fill:#e8f5e9
+    style L fill:#e8f5e9
+```
+
+**Key Design Decisions:**
+- **Regex First**: 90% of ADs follow predictable patterns → fast & free
+- **AI Fallback**: Novel formats automatically trigger GPT-4o-mini → smart & cheap
+- **Pydantic Validation**: Ensures data quality regardless of extraction method
+
 ## Why I Built It This Way
 
 When I started this project, I had to choose between several approaches. I went with **Docling + Rule-Based Parsing** because it's practical, fast, and gets the job done.
@@ -86,21 +118,6 @@ Tested on **FAA AD 2022-03-06** (Airbus Canada A220 - BD-500 series):
 **Speed**: Processes an AD in 5-10 seconds  
 **Cost**: Basically free (Rule-Based) -> ~$0.01 (AI Fallback)  
 **Accuracy**: 100% on test cases + successful on unseen format
-
-## If I Had More Time
-
-**Short-term (1-2 weeks)**
-1. Parse MSN ranges
-2. Write proper unit tests
-
-**Medium-term (1-2 months)**
-3. Support more aviation authorities
-4. Extract data from tables
-5. Add confidence scores to flag uncertain extractions
-
-**Long-term (3-6 months)**
-6. Fine-tune a small AI model on 100+ ADs
-7. Build an active learning loop where humans review edge cases and improve the system
 
 ## Bottom Line
 
