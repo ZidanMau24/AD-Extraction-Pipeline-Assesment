@@ -5,31 +5,59 @@ Automated pipeline for extracting applicability rules from Airworthiness Directi
 ## Overview
 
 This project implements an automated system to:
-1. Extract applicability rules from AD PDFs (FAA and EASA formats)
-2. Structure rules in machine-readable format (Pydantic models)
-3. Evaluate whether specific aircraft configurations are affected by ADs
+1. **Extract** applicability rules from AD PDFs (FAA and EASA formats)
+2. **Structure** rules in machine-readable format (Pydantic models)
+3. **Evaluate** whether specific aircraft configurations are affected by ADs
+
+Key Features:
+- **Automatic Authority Detection**: Identifies whether an AD is FAA or EASA.
+- **Hybrid Extraction**: Uses regex-based parsing for standard formats and falls back to **LLM (OpenAI)** for novel or complex formats.
+- **Batch Processing**: Automatically processes all PDFs in the `data/` directory.
+- **Interactive UI**: Includes a Gradio web interface for easy testing.
 
 ## Quick Start
 
 ### Installation
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
-```
+1.  **Clone the repository**:
+    ```bash
+    git clone <repo-url>
+    cd AD-Extraction-Pipeline-Assesment
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Configure API Key** (Required for LLM Fallback):
+    - Create a `.env` file in the root directory.
+    - Add your OpenAI API key:
+      ```env
+      OPENAI_API_KEY=your-api-key-here
+      ```
 
 ### Usage
 
+**Option 1: Complete Batch Pipeline**
+Process all PDFs in the `data/` folder and generate a full evaluation report:
 ```bash
-# Run the complete pipeline
-python app.py
+python main.py
 ```
-
 This will:
-- Extract rules from both ADs
-- Evaluate all 10 test aircraft
+- Convert all PDFs in `data/` to Markdown (saved to `extracted/`)
+- Detect the authority (FAA/EASA) for each AD
+- Extract rules (using regex or LLM fallback)
+- Evaluate all 10 against test aircraft
 - Verify the 3 validation examples
 - Save results to `results/evaluation_results.json`
+
+**Option 2: Interactive Web UI**
+Launch a web interface to upload PDFs and see results instantly:
+```bash
+python app.py
+```
+Open your browser at `http://localhost:7860`.
 
 ## Project Structure
 
@@ -38,48 +66,41 @@ aviation/
 ├── README.md                    # This file
 ├── report.md                    # Technical report
 ├── requirements.txt             # Python dependencies
+├── .env                         # Environment variables (API keys)
 ├── models.py                    # Pydantic data models
 ├── evaluator.py                 # Evaluation engine
-├── main.py                      # Main execution script
+├── main.py                      # Main batch execution script
+├── app.py                       # Gradio web interface
+├── utils.py                     # Helper utilities (Authority Detection)
 ├── test_data.py                 # Test aircraft configurations
 ├── extractors/
 │   ├── faa_extractor.py        # FAA AD parser
 │   ├── easa_extractor.py       # EASA AD parser
-│   └── llm_fallback.py         # Other Format AD parser (AI Fallback)  
-├── extracted/
-│   ├── FAA_AD_2025-23-53.md    # Extracted markdown
-│   └── EASA_AD_2025-0254.md    # Extracted markdown
-├── results/
-│   └── evaluation_results.json  # Evaluation results
-└── data/
+│   └── llm_fallback.py         # LLM Fallback Extractor (OpenAI)
+├── extracted/                   # Generated markdown files
+├── results/                     # Generated JSON results
+└── data/                        # Input PDF files
     ├── EASA_AD_2025-0254R1_1.pdf
     └── EASA_AD_US-2025-23-53_1.pdf
 ```
 
 ## Architecture
 
-### 1. PDF Extraction (Docling)
-- Converts PDF to markdown
-- Preserves structure and formatting
-- Already implemented in `extract_all_ads.py`
+1.  **PDF Ingestion**:
+    - **Docling** converts PDFs to structural Markdown.
+    - `main.py` handles batch processing of the `data/` directory.
 
-### 2. Data Models (Pydantic)
-- `AircraftConfiguration`: Aircraft model, MSN, modifications
-- `ModificationReference`: Mod/SB with revision and phase
-- `ApplicabilityRule`: Models, MSN constraints, exclusions
-- `AirworthinessDirective`: Complete AD with metadata
-- `EvaluationResult`: Evaluation outcome with explanation
+2.  **Authority Detection**:
+    - `utils.detect_authority()` analyzes the text to determine if the AD is from FAA, EASA, or Unknown.
 
-### 3. Rule Extraction
-- **FAA Extractor**: Parses simple model lists
-- **EASA Extractor**: Handles complex modification exclusions
-- Regex-based parsing with fallback patterns
+3.  **Rule Extraction**:
+    - **FAA Extractor**: Regex-based parsing for standard FAA formats.
+    - **EASA Extractor**: Regex-based parsing for EASA formats (handling complex exclusions).
+    - **LLM Fallback**: If regex fails or authority is unknown, the system uses **GPT-4o-mini** (via `LLMFallbackExtractor`) to intelligently parse the AD.
 
-### 4. Evaluation Engine
-- Model matching (exact + variant matching)
-- MSN constraint checking
-- Modification exclusion logic
-- Batch evaluation support
+4.  **Evaluation Engine**:
+    - Matches aircraft configurations against extracted Pydantic models.
+    - Handles model variants (e.g., A320-214 matches A320) and modification exclusions.
 
 ## Example Results
 
