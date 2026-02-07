@@ -1,103 +1,79 @@
 # Technical Report: AD Extraction Pipeline
 
-## System Architecture
+## 1. Approach
 
-The pipeline uses a hybrid approach that combines speed with flexibility:
+i built this pipeline with one goal in mind: **reliability at speed and cost efficience**.
+
+Instead of throwing everything at an expensive AI model, I used a **hybrid approach**. So the pipeline will act like a smart triage nurse: standard cases get handled by fast, simple rules. But only the weird, complex cases get sent to the "specialist" (the AI Fallback).
 
 ```mermaid
 flowchart TD
     A[" Upload AD PDF"] --> B["🔄 Docling Conversion"]
     B --> C["📝 Markdown Text"]
-    C --> D{"🏢 Select Authority"}
+    C --> D{"🔍 Detect Authority"}
     D -->|FAA| E[" FAA Regex Extractor"]
     D -->|EASA| F[" EASA Regex Extractor"]
-    E --> G{"✅ Rules Found?"}
-    F --> G
-    G -->|Yes| H["📊 Structured Output"]
-    G -->|No| I[" LLM Fallback<br/>(GPT-4o-mini)"]
-    I --> H
-    H --> J["💾 Pydantic Models"]
+    D -->|Unknown| G[" LLM Fallback (OpenAI)"]
+    E --> H{"✅ Rules Found?"}
+    F --> H
+    H -->|Yes| I["📊 Structured Output"]
+    H -->|No| G
+    G --> I
+    I --> J["💾 Pydantic Models"]
     J --> K["🔍 Evaluation Engine"]
     K --> L["✅ Results + Reasoning"]
     
     style A fill:#e1f5ff
     style B fill:#fff3e0
-    style I fill:#f3e5f5
-    style H fill:#e8f5e9
+    style G fill:#f3e5f5
+    style I fill:#e8f5e9
     style L fill:#e8f5e9
 ```
 
-**Key Design Decisions:**
-- **Regex First**: 90% of ADs follow predictable patterns → fast & free
-- **AI Fallback**: Novel formats automatically trigger GPT-4o-mini → smart & cheap
-- **Pydantic Validation**: Ensures data quality regardless of extraction method
+### How It Works
+1.  **Reading the PDF**: I used **Docling** to turn the PDF into clean Markdown text. I chose this over simple text extraction because Docling understands document structure (like headers and lists), which helps me find the exact "Applicability" section without guessing. And also i use this because it's library that i recently see in Threads.
+2.  **Smart Routing**: The system reads the text and automatically figures out if it's an **FAA**, **EASA** or Other format of AD's document.
+3.  **The Fast Lane (Regex)**: For 90% of ADs, the format is predictable.So i wrote specific patterns (Regex) to catch these. It's essentially free and finishes in milliseconds.
+4.  **The Safety Net (AI Fallback)**: If the regex finds nothing (maybe the format changed, or it's a weird scanned doc), the system automatically sends the text to **GPT-4o-mini**. This ensures the pipeline never crashes just because a document looks different.
 
-## Why I Built It This Way
+## 2. Challenges
 
-When I started this project, I had to choose between several approaches. I went with **Docling + Rule-Based Parsing** because it's practical, fast, and gets the job done.
+### "And" vs "Or" Ambiguity
+EASA AD 2025-0254 was tricky. It listed exclusions saying: "except those with mod A **and** except those with mod B".
+To a computer, "and" usually means "both must be true". But in this context, it meant "if you have **either** one, you're safe". I had to write the logic to treat these as a list of independent "get out of jail free" cards.
 
-### The Tools I Used
+### Matching Aircraft Variants
+Aviation data is messy. An AD might apply to "A320", but the fleet has "A320-214".
+I built a smart matcher that understands hierarchy:
+- A generic rule for "A320" **applies** to a specific "A320-214".
+- A specific rule for "A320-214" **does not** apply to a generic "A320".
+This keeps the logic safe and conservative.
 
-**Docling for PDF Reading**
-I chose Docling because it's specifically designed for documents. It converts PDFs to clean markdown while keeping the structure intact - headings, lists, everything. No need to confuse with messy PDF parsing.
+### Detecting Unseen Formats
+Hard-coding regex patterns is hard to catchup with new format sometimes. If the FAA changes their font or layout next week, regex breaks.
+That's why adding the **LLM Fallback** was the most critical challenge I solved. It turns a fragile script into a robust system that can handle the unexpected.
 
-**Rule-Based Parsing (Regex)**
-Here's the thing: FAA and EASA ADs follow pretty consistent formats. Once you look at a few, you start seeing patterns:
-- Aircraft models are always listed in a similar way
-- Modifications follow predictable formats like "mod 24591" or "SB A320-57-1089 Rev 04"
-- Exclusion clauses use phrases like "except those on which..."
+## 3. Limitations
 
-So I wrote regex patterns to extract these. It's fast, cheap, and when something breaks, I can easily debug it.
+### Complex Tables
+Some ADs act like spreadsheets, with massive tables of part numbers. Right now, I'm not parsing those row-by-row. Docling *can* extract tables, so adding this would be my next step.
 
-**Why Not Just Use AI for Everything?**
+### MSN Ranges
+I currently handle "all MSNs" or specific lists (e.g., "MSN 123, 124"). I haven't built the logic to parse ranges like "MSN 1000 through 2000" yet, though it's a straightforward math problem to solve next.
 
-I considered using GPT-4 or Claude to read the PDFs directly, but:
-- It costs 10-50x more per document
-- AI can hallucinate on critical safety data (not good for aviation)
-- It's harder to explain why it made certain decisions
+## 4. Trade-offs
 
-That said, I designed the system so we can add AI as a fallback for weird edge cases later.
+### Why Not Use AI for Everything?
+I could have just sent every PDF to GPT-4. It would have been easier to code.
+**But I didn't, because:**
+- **Cost**: Processing thousands of ADs would cost real money. Regex is free.
+- **Speed**: APIs take seconds. Regex takes milliseconds.
+- **Trust**: AI can "hallucinate" (make things up). In aviation, if an AI imagines a rule that doesn't exist, planes get grounded (or worse). I prioritize the deterministic code first.
 
-## The Tricky Parts
-
-### Challenge 1: Ambiguous Language
-
-ADs are written by humans, for humans. Sometimes the wording is confusing.
-
-For example, EASA AD 2025-0254 says:
-> "except those on which mod 24591 has been embodied **and** except those on which SB A320-57-1089 has been embodied"
-
-Does "and" mean you need BOTH to be excluded, or EITHER one? 
-
-After reading the AD, I figured out it's "EITHER" - if you have any of those modifications, you're excluded. I coded it that way.
-
-### Challenge 2: Aircraft Model Variants
-
-Aircraft have a lot of variants. An A320-214 is a type of A320. But should "A320" in a rule match "A320-214"?
-
-so I implemented smart matching where:
-- "A320-214" matches "A320" ✅
-- "A320" matches "A320-214" ✅
-- But "A320-214" doesn't match "A320-232" ❌
-
-This feels right for how aviation works.
-
-### Challenge 3: Production vs Service Modifications
-
-Modifications can be applied during manufacturing ("production") or later ("service"). Sometimes the AD doesn't specify which.
-
-I made the matching flexible - if the phase isn't specified in both places, we ignore it and just match on the modification ID.
-
-### What It Can't Do (Yet)
-
-**MSN Ranges**
-Right now, I only handle "all MSN". Some ADs say "MSN 1000-5000" - I'd need to add range parsing for that. Not hard, just didn't need it for these test ADs.
-
-**Only FAA and EASA**
-I built extractors for these two authorities. Adding more (like Canada's TCCA or Australia's CASA) would mean writing new extractors for their formats.
-
-**Complex Tables**
-Some ADs have big compliance tables. Docling can extract tables, but I haven't wired that up yet.
+### Text vs. Vision Models
+I considered using Vision Models (like GPT-4o-vision) to "look" at the PDF screenshots.
+**Decision**: Stick to Text (Docling).
+**Reason**: Vision models are expensive and slow. By converting the PDF to Markdown first, I give the AI a clean, structured text signal. It's cheaper, faster, and less prone to misreading a blurry font.
 
 ## The Results
 
@@ -109,22 +85,12 @@ The system works really well:
 - ✅ **AI Safety Net**: Successfully implemented GPT-4o-mini fallback for novel ADs
 
 **Real-World Test:**
-Tested on **FAA AD 2022-03-06** (Airbus Canada A220 - BD-500 series):
+Tested on **AD 2022-03-06** (Airbus Canada A220 - BD-500 series):
 - Regex patterns didn't match this newer format
 - LLM fallback automatically activated
-- Successfully extracted: Authority (FAA), Manufacturer (Airbus Canada), Models (BD-500-1A10/1A11)
+- Successfully extracted: Authority (TCCA), Manufacturer (Airbus Canada), Models (BD-500-1A10/1A11)
 - **Cost**: ~$0.008 for this extraction
 
 **Speed**: Processes an AD in 5-10 seconds  
 **Cost**: Basically free (Rule-Based) -> ~$0.01 (AI Fallback)  
 **Accuracy**: 100% on test cases + successful on unseen format
-
-## Bottom Line
-
-This is a professional-grade solution that pairs **speed** with **flexibility**:
-- **Fast & Cheap**: 90% of ADs hit the rule-based path (milliseconds, free)
-- **Smart**: The 10% weird ADs go to OpenAI (smart, small cost)
-- **Reliable**: 100% accuracy on provided examples
-- **Production Ready**: Structured Pydantic models ensure data quality
-
-It's the best of both worlds: engineering efficiency + AI power.
