@@ -44,6 +44,11 @@ class FAAExtractor:
         # Extract manufacturer
         manufacturer = self._extract_manufacturer(markdown_text)
         
+        # Try to find real AD ID from text
+        real_ad_id = self._extract_ad_id(markdown_text)
+        if real_ad_id:
+            ad_id = f"FAA AD {real_ad_id}"
+
         # Parse applicability rules
         rules = self._parse_applicability_rules(applicability_text)
         
@@ -56,6 +61,15 @@ class FAAExtractor:
             raw_applicability_text=applicability_text
         )
     
+
+    def _extract_ad_id(self, text: str) -> str:
+        """Extract AD ID from the AD text."""
+        # Look for "AD YYYY-XX-XX"
+        match = re.search(r'AD\s+(\d{4}-\d{2}-\d{2})', text)
+        if match:
+            return match.group(1)
+        return ""
+
     def _extract_applicability_section(self, text: str) -> str:
         """Extract the applicability section from the markdown"""
         # Look for "(c) Applicability" section

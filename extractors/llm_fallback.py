@@ -60,7 +60,8 @@ class LLMFallbackExtractor:
         
         Output must be a valid JSON object matching this structure:
         {
-            "issuing_authority": "EASA", "FAA", "TCCA", "CAA UK", "ANAC", "CASA", "CAAC", "CAAS", "JCAB", "DGCA India",And "ICAO",
+            "ad_id": "string (e.g., 2025-23-53 or 2025-0254R1)",
+            "issuing_authority": "EASA", "FAA", "TCCA", "CAA UK", "ANAC", "CASA", "CAAC", "CAAS", "JCAB", "DGCA India", "ICAO",
             "effective_date": "string",
             "manufacturer": "string",
             "applicability_rules": [
@@ -109,6 +110,15 @@ class LLMFallbackExtractor:
             
             # Map JSON data to Pydantic models
             rules = []
+            extracted_ad_id = data.get("ad_id", ad_id)
+            authority = data.get("issuing_authority", "Unknown")
+            
+            # Format ad_id with authority prefix if not already present
+            if authority != "Unknown" and authority not in extracted_ad_id:
+                final_ad_id = f"{authority} AD {extracted_ad_id}"
+            else:
+                final_ad_id = extracted_ad_id
+
             for rule_data in data.get("applicability_rules", []):
                 
                 # Parse MSN constraint
@@ -148,8 +158,8 @@ class LLMFallbackExtractor:
                 ))
             
             return AirworthinessDirective(
-                ad_id=ad_id,
-                issuing_authority=data.get("issuing_authority", "Unknown"),
+                ad_id=final_ad_id,
+                issuing_authority=authority,
                 effective_date=data.get("effective_date", "Unknown"),
                 manufacturer=data.get("manufacturer", "Unknown"),
                 applicability_rules=rules,
