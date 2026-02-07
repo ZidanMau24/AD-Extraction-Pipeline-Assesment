@@ -156,7 +156,7 @@ All 3 verification examples from the assignment pass:
 ✅ **Batch evaluation** - Process multiple aircraft efficiently  
 ✅ **Explainable** - Clear reasons for each decision  
 
-## Limitations & Future Work
+# Written Report
 
 See `report.md` for detailed discussion of:
 - Approach rationale
