@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 ```bash
 # Run the complete pipeline
-python main.py
+python app.py
 ```
 
 This will:
