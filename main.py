@@ -2,29 +2,60 @@
 Main execution script for AD extraction pipeline.
 
 This script:
-1. Loads extracted markdown files
-2. Extracts rules from both ADs
-3. Evaluates all test aircraft
-4. Saves results to JSON
-5. Generates summary report
+1. Scans `data/` directory for PDF files
+2. Converts PDFs to Markdown using Docling (saved to `extracted/`)
+3. Automatically detects authority (FAA/EASA/etc.)
+4. Extracts rules using appropriate extractor (with LLM fallback)
+5. Evaluates test aircraft against all extracted ADs
+6. Saves results to JSON and generates summary report
 """
 
 import json
+import os
 from pathlib import Path
-from extractors import FAAExtractor, EASAExtractor
+from typing import List, Optional
+
+from docling.document_converter import DocumentConverter
+from extractors import FAAExtractor, EASAExtractor, LLMFallbackExtractor
 from evaluator import ADEvaluator
 from test_data import TEST_AIRCRAFT, VERIFICATION_EXAMPLES
 from models import AirworthinessDirective, EvaluationResult
+from utils import detect_authority
 
 
-def load_markdown(filepath: str) -> str:
-    """Load markdown content from file"""
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return f.read()
+def save_markdown(content: str, filepath: Path):
+    """Save markdown content to file"""
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"  💾 Saved markdown to: {filepath}")
 
 
-def save_results(results: list, filepath: str):
+def process_pdf(pdf_path: Path, extracted_dir: Path) -> Optional[str]:
+    """
+    Convert PDF to markdown.
+    Returns the markdown content.
+    """
+    try:
+        print(f"  🔄 Converting {pdf_path.name}...")
+        converter = DocumentConverter()
+        result = converter.convert(str(pdf_path))
+        markdown_text = result.document.export_to_markdown()
+        
+        # Save to extracted folder
+        md_filename = pdf_path.stem + ".md"
+        save_markdown(markdown_text, extracted_dir / md_filename)
+        
+        return markdown_text
+    except Exception as e:
+        print(f"  ❌ Error converting {pdf_path.name}: {e}")
+        return None
+
+
+def save_results(results: list, filepath: Path):
     """Save evaluation results to JSON file"""
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    
     # Convert Pydantic models to dicts
     results_dict = []
     for result in results:
@@ -80,35 +111,48 @@ def verify_examples(results: list):
     print("VERIFICATION EXAMPLES CHECK")
     print("="*80)
     
+    if not results:
+        print("⚠️ No results to verify.")
+        return False
+
     all_passed = True
+    examples_checked = 0
     
     for idx, example in enumerate(VERIFICATION_EXAMPLES, 1):
         aircraft = example["aircraft"]
         expected = example["expected"]
         
+        # Check if we have results for this aircraft
+        aircraft_results = [r for r in results 
+                           if r.aircraft.model == aircraft.model and 
+                              r.aircraft.msn == aircraft.msn]
+        
+        if not aircraft_results:
+            continue
+            
+        examples_checked += 1
         print(f"\nExample {idx}: {aircraft}")
         
-        for result in results:
-            if (result.aircraft.model == aircraft.model and 
-                result.aircraft.msn == aircraft.msn):
-                
-                expected_affected = expected.get(result.ad_id)
-                if expected_affected is None:
-                    continue
-                
-                passed = result.is_affected == expected_affected
-                status = "✅ PASS" if passed else "❌ FAIL"
-                
-                print(f"  {result.ad_id}: {status}")
-                print(f"    Expected: {'Affected' if expected_affected else 'Not Affected'}")
-                print(f"    Got: {'Affected' if result.is_affected else 'Not Affected'}")
-                print(f"    Reason: {result.reason}")
-                
-                if not passed:
-                    all_passed = False
+        for result in aircraft_results:
+            expected_affected = expected.get(result.ad_id)
+            if expected_affected is None:
+                continue
+            
+            passed = result.is_affected == expected_affected
+            status = "✅ PASS" if passed else "❌ FAIL"
+            
+            print(f"  {result.ad_id}: {status}")
+            print(f"    Expected: {'Affected' if expected_affected else 'Not Affected'}")
+            print(f"    Got: {'Affected' if result.is_affected else 'Not Affected'}")
+            print(f"    Reason: {result.reason}")
+            
+            if not passed:
+                all_passed = False
     
     print("\n" + "="*80)
-    if all_passed:
+    if examples_checked == 0:
+        print("⚠️ No matching verification examples found for the processed ADs.")
+    elif all_passed:
         print("✅ ALL VERIFICATION EXAMPLES PASSED!")
     else:
         print("❌ SOME VERIFICATION EXAMPLES FAILED!")
@@ -123,47 +167,110 @@ def main():
     print("AD EXTRACTION PIPELINE")
     print("="*80)
     
-    # Initialize extractors and evaluator
-    faa_extractor = FAAExtractor()
-    easa_extractor = EASAExtractor()
-    evaluator = ADEvaluator()
+    # Setup directories
+    base_dir = Path.cwd()
+    data_dir = base_dir / "data"
+    extracted_dir = base_dir / "extracted"
+    results_dir = base_dir / "results"
     
-    # Load and extract FAA AD
-    print("\n[1/5] Loading FAA AD 2025-23-53...")
-    faa_markdown = load_markdown(r"G:\aviation\extracted\FAA_AD_2025-23-53.md")
-    faa_ad = faa_extractor.extract(faa_markdown, "FAA-2025-23-53")
-    print(f"  ✅ Extracted {len(faa_ad.applicability_rules)} rule(s)")
-    for idx, rule in enumerate(faa_ad.applicability_rules, 1):
-        print(f"     Rule {idx}: {rule}")
-    
-    # Load and extract EASA AD
-    print("\n[2/5] Loading EASA AD 2025-0254...")
-    easa_markdown = load_markdown(r"G:\aviation\extracted\EASA_AD_2025-0254.md")
-    easa_ad = easa_extractor.extract(easa_markdown, "EASA-2025-0254")
-    print(f"  ✅ Extracted {len(easa_ad.applicability_rules)} rule(s)")
-    for idx, rule in enumerate(easa_ad.applicability_rules, 1):
-        print(f"     Rule {idx}: {rule}")
-    
-    # Evaluate test aircraft
-    print("\n[3/5] Evaluating test aircraft...")
-    ads = [faa_ad, easa_ad]
-    all_results = evaluator.evaluate_batch(TEST_AIRCRAFT, ads)
-    print(f"  ✅ Evaluated {len(TEST_AIRCRAFT)} aircraft against {len(ads)} ADs")
-    
-    # Evaluate verification examples
-    print("\n[4/5] Evaluating verification examples...")
-    verification_aircraft = [ex["aircraft"] for ex in VERIFICATION_EXAMPLES]
-    verification_results = evaluator.evaluate_batch(verification_aircraft, ads)
-    all_results.extend(verification_results)
-    print(f"  ✅ Evaluated {len(VERIFICATION_EXAMPLES)} verification examples")
-    
-    # Save results
-    print("\n[5/5] Saving results...")
-    results_dir = Path(r"G:\aviation\results")
+    extracted_dir.mkdir(exist_ok=True)
     results_dir.mkdir(exist_ok=True)
     
+    # 1. Find all PDF files
+    if not data_dir.exists():
+         print(f"❌ Data directory not found: {data_dir}")
+         return
+
+    pdf_files = list(data_dir.glob("*.pdf"))
+    if not pdf_files:
+        print(f"❌ No PDF files found in {data_dir}")
+        return
+
+    print(f"\n[1/3] Processing {len(pdf_files)} PDF files...")
+    
+    extracted_ads = []
+    
+    # 2. Process each PDF
+    for i, pdf_path in enumerate(pdf_files, 1):
+        print(f"\n📄 File {i}/{len(pdf_files)}: {pdf_path.name}")
+        
+        # Convert to markdown
+        markdown_text = process_pdf(pdf_path, extracted_dir)
+        if not markdown_text:
+            continue
+            
+        # Extract AD ID from filename
+        ad_id = pdf_path.stem.replace("_", "-")
+        
+        # Detect Authority
+        authority = detect_authority(markdown_text)
+        print(f"  🔍 Detected Authority: {authority}")
+        
+        # Choose Extractor
+        extractor = None
+        if authority == "FAA":
+            extractor = FAAExtractor()
+        elif authority == "EASA":
+            extractor = EASAExtractor()
+        else:
+            print(f"  ⚠️ Unknown authority ({authority}). Using LLM Fallback.")
+            extractor = LLMFallbackExtractor()
+        
+        # Initialize ad variable
+        ad = None
+        
+        try:
+            # Primary extraction attempt
+            if not isinstance(extractor, LLMFallbackExtractor):
+                try:
+                    ad = extractor.extract(markdown_text, ad_id)
+                    print(f"  ✅ Extracted {len(ad.applicability_rules)} rule(s) via rule-based extraction")
+                except Exception as e:
+                    print(f"  ⚠️ Rule-based extraction failed: {e}")
+                    ad = None
+            else:
+                 # If primary IS fallback (because authority unknown), try it
+                 if extractor.client:
+                     print("  Attempting LLM extraction (primary)...")
+                     ad = extractor.extract(markdown_text, ad_id)
+                     print(f"  ✅ Extracted {len(ad.applicability_rules)} rule(s) via LLM")
+                 else:
+                     print("  ❌ Unknown authority and no OpenAI key. Skipping.")
+                     continue
+
+            # Fallback logic for rule-based failure
+            if (ad is None or not ad.applicability_rules) and not isinstance(extractor, LLMFallbackExtractor):
+                print("  ⚠️ No rules found or extraction failed. Attempting LLM fallback...")
+                llm_extractor = LLMFallbackExtractor()
+                if llm_extractor.client:
+                    try:
+                        ad = llm_extractor.extract(markdown_text, ad_id)
+                        print(f"  ✅ Extracted {len(ad.applicability_rules)} rule(s) via LLM fallback")
+                    except Exception as e:
+                        print(f"  ❌ LLM fallback failed: {e}")
+                else:
+                    print("  ⚠️ No OpenAI API key for fallback. Skipping.")
+
+            if ad:
+                extracted_ads.append(ad)
+                
+        except Exception as e:
+            print(f"  ❌ Extraction error: {e}")
+
+    # 3. Evaluate Results
+    if not extracted_ads:
+        print("\n❌ No ADS successfully extracted. Exiting.")
+        return
+        
+    print(f"\n[2/3] Evaluating {len(TEST_AIRCRAFT)} test aircraft against {len(extracted_ads)} ADs...")
+    evaluator = ADEvaluator()
+    all_results = evaluator.evaluate_batch(TEST_AIRCRAFT, extracted_ads)
+    print(f"  ✅ Generated {len(all_results)} evaluation results")
+    
+    # 4. Save and Report
+    print("\n[3/3] Saving results...")
     results_file = results_dir / "evaluation_results.json"
-    save_results(all_results, str(results_file))
+    save_results(all_results, results_file)
     print(f"  ✅ Results saved to: {results_file}")
     
     # Print summary
