@@ -2,7 +2,7 @@
 
 ## 1. Approach
 
-i built this pipeline with one goal in mind: **reliability at speed and cost efficience**.
+I built this pipeline to be: **reliability at speed and cost efficience**.
 
 Instead of throwing everything at an expensive AI model, I used a **hybrid approach**. So the pipeline will act like a smart triage nurse: standard cases get handled by fast, simple rules. But only the weird, complex cases get sent to the "specialist" (the AI Fallback).
 
