@@ -39,7 +39,7 @@ When I started this project, I had to choose between several approaches. I went 
 ### The Tools I Used
 
 **Docling for PDF Reading**
-I chose Docling because it's specifically designed for documents. It converts PDFs to clean markdown while keeping the structure intact - headings, lists, everything. No need to fight with messy PDF parsing.
+I chose Docling because it's specifically designed for documents. It converts PDFs to clean markdown while keeping the structure intact - headings, lists, everything. No need to confuse with messy PDF parsing.
 
 **Rule-Based Parsing (Regex)**
 Here's the thing: FAA and EASA ADs follow pretty consistent formats. Once you look at a few, you start seeing patterns:
@@ -69,13 +69,13 @@ For example, EASA AD 2025-0254 says:
 
 Does "and" mean you need BOTH to be excluded, or EITHER one? 
 
-After reading the full AD, I figured out it's "EITHER" - if you have any of those modifications, you're excluded. I coded it that way.
+After reading the AD, I figured out it's "EITHER" - if you have any of those modifications, you're excluded. I coded it that way.
 
 ### Challenge 2: Aircraft Model Variants
 
-Aircraft have tons of variants. An A320-214 is a type of A320. But should "A320" in a rule match "A320-214"?
+Aircraft have a lot of variants. An A320-214 is a type of A320. But should "A320" in a rule match "A320-214"?
 
-I decided: **yes**. I implemented smart matching where:
+so I implemented smart matching where:
 - "A320-214" matches "A320" ✅
 - "A320" matches "A320-214" ✅
 - But "A320-214" doesn't match "A320-232" ❌
