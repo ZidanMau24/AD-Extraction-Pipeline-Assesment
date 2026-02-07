@@ -5,10 +5,10 @@
       "msn": 48123,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
-    "is_affected": true,
-    "reason": "Matches rule 1: MD-11, MD-11F",
-    "matched_rule_index": 0
+    "ad_id": "FAA AD 2022-03-06",
+    "is_affected": false,
+    "reason": "Model MD-11 not in applicability or constraints not met",
+    "matched_rule_index": null
   },
   {
     "aircraft": {
@@ -16,21 +16,21 @@
       "msn": 48123,
       "modifications": []
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
     "is_affected": false,
     "reason": "Model MD-11 not in applicability or constraints not met",
     "matched_rule_index": null
   },
   {
     "aircraft": {
-      "model": "DC-10-30F",
-      "msn": 47890,
+      "model": "MD-11",
+      "msn": 48123,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2025-23-53",
     "is_affected": true,
-    "reason": "Matches rule 3: DC-10-10, DC-10-10F, DC-10-15, DC-10-30, DC-10-30F KC-10A, KDC-10, DC-10-40, DC-10-40F",
-    "matched_rule_index": 2
+    "reason": "Matches rule 1: MD-11, MD-11F",
+    "matched_rule_index": 0
   },
   {
     "aircraft": {
@@ -38,10 +38,32 @@
       "msn": 47890,
       "modifications": []
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model DC-10-30F not in applicability or constraints not met",
     "matched_rule_index": null
+  },
+  {
+    "aircraft": {
+      "model": "DC-10-30F",
+      "msn": 47890,
+      "modifications": []
+    },
+    "ad_id": "EASA AD 2025-0254R1",
+    "is_affected": false,
+    "reason": "Model DC-10-30F not in applicability or constraints not met",
+    "matched_rule_index": null
+  },
+  {
+    "aircraft": {
+      "model": "DC-10-30F",
+      "msn": 47890,
+      "modifications": []
+    },
+    "ad_id": "FAA AD 2025-23-53",
+    "is_affected": true,
+    "reason": "Matches rule 3: DC-10-10, DC-10-10F, DC-10-15, DC-10-30, DC-10-30F KC-10A, KDC-10, DC-10-40, DC-10-40F",
+    "matched_rule_index": 2
   },
   {
     "aircraft": {
@@ -49,7 +71,7 @@
       "msn": 30123,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model Boeing 737-800 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -60,7 +82,18 @@
       "msn": 30123,
       "modifications": []
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
+    "is_affected": false,
+    "reason": "Model Boeing 737-800 not in applicability or constraints not met",
+    "matched_rule_index": null
+  },
+  {
+    "aircraft": {
+      "model": "Boeing 737-800",
+      "msn": 30123,
+      "modifications": []
+    },
+    "ad_id": "FAA AD 2025-23-53",
     "is_affected": false,
     "reason": "Model Boeing 737-800 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -71,7 +104,7 @@
       "msn": 5234,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model A320-214 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -82,10 +115,21 @@
       "msn": 5234,
       "modifications": []
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
     "is_affected": true,
-    "reason": "Matches rule 1: A320-211, A320-212, A320-214, A320-215, A320-216, A320-231, A320-232, A320-233 aeroplanes",
+    "reason": "Matches rule 1: A320-211, A320-212, A320-214, A320-215, A320-216, A320-231, A320-232, A320-233",
     "matched_rule_index": 0
+  },
+  {
+    "aircraft": {
+      "model": "A320-214",
+      "msn": 5234,
+      "modifications": []
+    },
+    "ad_id": "FAA AD 2025-23-53",
+    "is_affected": false,
+    "reason": "Model A320-214 not in applicability or constraints not met",
+    "matched_rule_index": null
   },
   {
     "aircraft": {
@@ -100,7 +144,7 @@
         }
       ]
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model A320-232 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -118,10 +162,28 @@
         }
       ]
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
     "is_affected": false,
     "reason": "Excluded due to modification(s): MOD 24591 (production)",
     "matched_rule_index": 0
+  },
+  {
+    "aircraft": {
+      "model": "A320-232",
+      "msn": 6789,
+      "modifications": [
+        {
+          "type": "mod",
+          "identifier": "24591",
+          "revision": null,
+          "phase": "production"
+        }
+      ]
+    },
+    "ad_id": "FAA AD 2025-23-53",
+    "is_affected": false,
+    "reason": "Model A320-232 not in applicability or constraints not met",
+    "matched_rule_index": null
   },
   {
     "aircraft": {
@@ -136,7 +198,7 @@
         }
       ]
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model A320-214 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -154,10 +216,28 @@
         }
       ]
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
     "is_affected": false,
     "reason": "Excluded due to modification(s): SB A320-57-1089 Rev 04 (service)",
     "matched_rule_index": 0
+  },
+  {
+    "aircraft": {
+      "model": "A320-214",
+      "msn": 7456,
+      "modifications": [
+        {
+          "type": "sb",
+          "identifier": "A320-57-1089",
+          "revision": "04",
+          "phase": null
+        }
+      ]
+    },
+    "ad_id": "FAA AD 2025-23-53",
+    "is_affected": false,
+    "reason": "Model A320-214 not in applicability or constraints not met",
+    "matched_rule_index": null
   },
   {
     "aircraft": {
@@ -165,7 +245,7 @@
       "msn": 8123,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model A321-111 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -176,10 +256,21 @@
       "msn": 8123,
       "modifications": []
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
     "is_affected": true,
     "reason": "Matches rule 2: A321-111, A321-112, A321-131",
     "matched_rule_index": 1
+  },
+  {
+    "aircraft": {
+      "model": "A321-111",
+      "msn": 8123,
+      "modifications": []
+    },
+    "ad_id": "FAA AD 2025-23-53",
+    "is_affected": false,
+    "reason": "Model A321-111 not in applicability or constraints not met",
+    "matched_rule_index": null
   },
   {
     "aircraft": {
@@ -194,7 +285,7 @@
         }
       ]
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model A321-112 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -212,18 +303,36 @@
         }
       ]
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
     "is_affected": false,
     "reason": "Excluded due to modification(s): MOD 24977 (production)",
     "matched_rule_index": 1
   },
   {
     "aircraft": {
+      "model": "A321-112",
+      "msn": 364,
+      "modifications": [
+        {
+          "type": "mod",
+          "identifier": "24977",
+          "revision": null,
+          "phase": "production"
+        }
+      ]
+    },
+    "ad_id": "FAA AD 2025-23-53",
+    "is_affected": false,
+    "reason": "Model A321-112 not in applicability or constraints not met",
+    "matched_rule_index": null
+  },
+  {
+    "aircraft": {
       "model": "A319-100",
       "msn": 9234,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model A319-100 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -234,7 +343,18 @@
       "msn": 9234,
       "modifications": []
     },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "EASA AD 2025-0254R1",
+    "is_affected": false,
+    "reason": "Model A319-100 not in applicability or constraints not met",
+    "matched_rule_index": null
+  },
+  {
+    "aircraft": {
+      "model": "A319-100",
+      "msn": 9234,
+      "modifications": []
+    },
+    "ad_id": "FAA AD 2025-23-53",
     "is_affected": false,
     "reason": "Model A319-100 not in applicability or constraints not met",
     "matched_rule_index": null
@@ -245,100 +365,31 @@
       "msn": 46234,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
-    "is_affected": true,
-    "reason": "Matches rule 2: MD-10-10F, MD-10-30F",
-    "matched_rule_index": 1
-  },
-  {
-    "aircraft": {
-      "model": "MD-10-10F",
-      "msn": 46234,
-      "modifications": []
-    },
-    "ad_id": "EASA-2025-0254",
+    "ad_id": "FAA AD 2022-03-06",
     "is_affected": false,
     "reason": "Model MD-10-10F not in applicability or constraints not met",
     "matched_rule_index": null
   },
   {
     "aircraft": {
-      "model": "MD-11F",
-      "msn": 48400,
+      "model": "MD-10-10F",
+      "msn": 46234,
       "modifications": []
     },
-    "ad_id": "FAA-2025-23-53",
+    "ad_id": "EASA AD 2025-0254R1",
+    "is_affected": false,
+    "reason": "Model MD-10-10F not in applicability or constraints not met",
+    "matched_rule_index": null
+  },
+  {
+    "aircraft": {
+      "model": "MD-10-10F",
+      "msn": 46234,
+      "modifications": []
+    },
+    "ad_id": "FAA AD 2025-23-53",
     "is_affected": true,
-    "reason": "Matches rule 1: MD-11, MD-11F",
-    "matched_rule_index": 0
-  },
-  {
-    "aircraft": {
-      "model": "MD-11F",
-      "msn": 48400,
-      "modifications": []
-    },
-    "ad_id": "EASA-2025-0254",
-    "is_affected": false,
-    "reason": "Model MD-11F not in applicability or constraints not met",
-    "matched_rule_index": null
-  },
-  {
-    "aircraft": {
-      "model": "A320-214",
-      "msn": 4500,
-      "modifications": [
-        {
-          "type": "mod",
-          "identifier": "24591",
-          "revision": null,
-          "phase": "production"
-        }
-      ]
-    },
-    "ad_id": "FAA-2025-23-53",
-    "is_affected": false,
-    "reason": "Model A320-214 not in applicability or constraints not met",
-    "matched_rule_index": null
-  },
-  {
-    "aircraft": {
-      "model": "A320-214",
-      "msn": 4500,
-      "modifications": [
-        {
-          "type": "mod",
-          "identifier": "24591",
-          "revision": null,
-          "phase": "production"
-        }
-      ]
-    },
-    "ad_id": "EASA-2025-0254",
-    "is_affected": false,
-    "reason": "Excluded due to modification(s): MOD 24591 (production)",
-    "matched_rule_index": 0
-  },
-  {
-    "aircraft": {
-      "model": "A320-214",
-      "msn": 4500,
-      "modifications": []
-    },
-    "ad_id": "FAA-2025-23-53",
-    "is_affected": false,
-    "reason": "Model A320-214 not in applicability or constraints not met",
-    "matched_rule_index": null
-  },
-  {
-    "aircraft": {
-      "model": "A320-214",
-      "msn": 4500,
-      "modifications": []
-    },
-    "ad_id": "EASA-2025-0254",
-    "is_affected": true,
-    "reason": "Matches rule 1: A320-211, A320-212, A320-214, A320-215, A320-216, A320-231, A320-232, A320-233 aeroplanes",
-    "matched_rule_index": 0
+    "reason": "Matches rule 2: MD-10-10F, MD-10-30F",
+    "matched_rule_index": 1
   }
 ]
